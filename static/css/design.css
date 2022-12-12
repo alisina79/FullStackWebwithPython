@@ -1,0 +1,29 @@
+.one{
+color: blue;
+background-color: white;
+border: 5px dashed darkblue;
+padding: 20px;
+margin: 20px;
+
+}
+
+#two{
+	color: red;
+	background-color: gray;
+	border: 2px solid green;
+	padding: 20px;
+	margin: 20px;
+
+
+}
+
+.three{
+
+color: brown;
+background-color: beige;
+border-bottom: 5px dashed black;
+padding: 20px;
+margin: 20px;
+
+
+}
