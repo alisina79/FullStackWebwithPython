@@ -7,7 +7,7 @@ from flask import Flask, render_template, url_for, request, redirect, flash, ses
 #WTForms includes (passwordfield, emailfield, textfield)
 #passlib , a library for password. 
 #encryption, decryption  (sha256_crypt) 
-from wtforms import Form, StringField, EmailField, PasswordField, validators
+from wtforms import Form, StringField, EmailField, PasswordField, validators, TextAreaField
 from passlib.hash import sha256_crypt
 #import mysql.connector
 #from mysql import flask_mysqldb
@@ -117,7 +117,37 @@ def login():
 
 @app.route('/dashboard')
 def dashboard():
-	return render_template('dashboard.html')
+	cur = mysql.connection.cursor()
+	result = cur.execute("SELECT * from posts")
+	posts = cur.fetchall()
+
+	return render_template('dashboard.html', posts=posts)
+
+
+class PostForm(Form):
+	title = StringField('Title', [validators.length(min=5, max=200)])
+	body = TextAreaField('Body', [validators.length(min=50)])
+
+
+
+@app.route('/addpost', methods=['GET', 'POST'])
+def addpost():
+	form = PostForm(request.form)
+	if request.method == 'POST' and form.validate():
+		title = form.title.data
+		body = form.body.data
+
+		#cursor class
+		cur = mysql.connection.cursor()
+		cur.execute("INSERT INTO posts(title, body, author) VALUES(%s, %s,%s)", (title, body, session['username']))
+		mysql.connection.commit()
+		cur.close()
+
+		flash('your post is published. ', 'success')
+
+		return redirect(url_for('dashboard'))
+
+	return render_template('addpost.html', form=form)
 
 @app.route('/logout')
 def logout():
@@ -125,6 +155,14 @@ def logout():
 	session.clear()
 	flash('you are logged out','success')
 	return redirect(url_for('home'))
+
+@app.route('/post/<string:id>/')
+def post(id):
+	cur = mysql.connection.cursor()
+	result=cur.execute("SELECT * from posts where id=%s", [id])
+	post = cur.fetchone()
+	return render_template("post.html", post=post)
+
 if __name__ == '__main__':
 	app.run(debug=True)
 
@@ -136,10 +174,3 @@ if __name__ == '__main__':
 #MYSQL, flask-mysqldb, mysql-connector
 
 #render_field 
-
-
-
-
-
-
-
